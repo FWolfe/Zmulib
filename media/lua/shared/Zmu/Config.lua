@@ -73,7 +73,9 @@ local Config = {}
 local meta = { __index = Config }
 
 local ConfigTable = {}
-
+local AcceptedTypes = {
+    "integer", "float", "boolean", "string"
+}
 
 function Config:new(module_name, logger)
     local module_name = module_name or "Config"
@@ -103,7 +105,12 @@ function Config:new(module_name, logger)
     return config
 end
 
-
+local contains(tbl, value)
+    for _, v in pairs(tbl) do
+        if v == value then return true end
+    end
+    return false
+end
 --[[- adds a new configuration setting with defaults and value limits.
 
 @tparam string key
@@ -112,9 +119,19 @@ end
 ]]
 function Config:add(key, data)
     -- TODO: validate data key names (error checking)
-    -- TODO: overwrite protection?
-    
-    self.Logger:verbose("Config: adding option " .. key)
+    self.Logger:verbose("Adding config option " .. key)
+    if self.Options[key] then
+        self.Logger:error("Config option ".. key .. " already exists")
+        return
+    end
+    if not data.type then
+        self.Logger:error("Config option ".. key .. " is missing data type")
+        return
+    end
+    if not contains(AcceptedKeys, data.type) then
+        self.Logger:error("Config option ".. key .. " is invalid data type "..tostring(data.type))
+        return
+    end 
     self.Options[key] = data 
     self.Settings[key] = data.default
 end
