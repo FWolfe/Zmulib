@@ -153,7 +153,7 @@ end
 
 --[[- changes a configuration option. 
 
-This will trigger the "ConfigChange" event (halts on true).
+This will trigger the "OnConfigChange"
 
 @tparam string key
 @tparam string|number|boolean value
@@ -177,6 +177,7 @@ function Config:set(key, value)
     self.Settings[key] = value
     self.Logger.level = self.Settings.LogLevel -- keep our logger in sync
     self.Logger:debug("Config key " .. key .. " set to " .. tostring(value))
+    triggerEvent('OnConfigChange', self, key, value)
     return true
 end
 
@@ -207,6 +208,7 @@ end
 
 
 --[[- checks if a value is valid for a configuration option, and returns a valid version.
+Called automatically with `Config:set(key, value)`
 
 @tparam string key
 @tparam string|number|boolean value
@@ -330,6 +332,7 @@ function Config.getAllConfigs()
 end
 
 
+LuaEventManager.AddEvent("OnConfigChange")
 LuaEventManager.AddEvent("OnConfigLoaded")
 LuaEventManager.AddEvent("OnConfigSaved")
 LuaEventManager.AddEvent("OnConfigReset")
