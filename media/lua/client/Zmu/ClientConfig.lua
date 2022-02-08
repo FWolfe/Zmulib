@@ -1,17 +1,18 @@
--- TODO: logging
+--[[- Client side code for syncing configuration settings from servers
 
+]]
 local Config = require("Zmu/Config")
 local sendClientCommand = sendClientCommand
 local pairs = pairs
 
 Config.requestConfig = function(ticks)
-    if ticks and ticks > 0 then return end
+    Events.OnTick.Remove(Config.requestSettings)
     if isClient() then
         for _, config in pairs(Config.getAllConfigs()) do
+            config.Logger:debug("Requesting config settings from server")
             sendClientCommand(getPlayer(), config.module_name, 'requestConfig', nil)
         end
     end
-    Events.OnTick.Remove(Config.requestSettings)
 end
 
 
@@ -27,6 +28,7 @@ local onServerCommand = function(module, command, args)
     if command ~= "updateConfig" then return end
     local config = Config.getAllConfigs()[module]
     if not config then return end
+    config.Logger:debug("Recieved config settings from server")
     config:applyTemp(args)
 end
 
