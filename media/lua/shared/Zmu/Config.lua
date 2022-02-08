@@ -66,6 +66,7 @@ local tonumber = tonumber
 local string = string
 
 local getFileReader = getFileReader
+local getFileWriter = getFileWriter
 
 local Logger = require("Zmu/Logger")
 local Config = {}
@@ -75,10 +76,21 @@ local ConfigTable = {}
 
 
 function Config:new(module_name, logger)
-    module_name = module_name or "Config" -- TODO: generate unique name
-    logger = logger or Logger:new(module_name)
+    local module_name = module_name or "Config"
+    local name = module_name -- for unique generation
+    logger = logger or Logger:new(module_name) -- use supplied name to fetch logger
+
+    -- generate a unique name (if it isnt already)
+    if ConfigTable[name] then
+        local c = 1
+        repeat
+            name = module_name .. tostring(c)
+            c = 1+c
+        until ConfigTable[name] == nil
+    end
+
     local config = setmetatable({
-        name = module_name,
+        name = name,
         Logger = logger,
         Options = {
             LogLevel = {type='integer', min=0, max=5, default=logger.level}
@@ -87,7 +99,7 @@ function Config:new(module_name, logger)
             LogLevel = logger.level,
         }
     }, meta)
-    ConfigTable[module_name] = config
+    ConfigTable[name] = config
     return config
 end
 
