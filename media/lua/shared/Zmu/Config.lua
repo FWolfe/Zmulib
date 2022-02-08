@@ -1,5 +1,53 @@
 --[[- Configuration and settings functions.
 
+Provides configurations and settings for mods, with .ini file support, data validation and 
+client/server syncing.
+
+
+```lua
+local Config = require("Zmu/Config")
+
+-- create a new Config instance with the name "ZMU"
+local config = Config:new('ZMU')
+
+config:add("BoolTest", {type='boolean', default=true})
+config:add("FloatTest", {type='float', min=0.1, default=0.6})
+config:add("IntTest", {type='integer', min=0, max=100, default=50})
+
+config:set("BoolTest", false)
+
+-- attempt to set these to bad values:
+config:set("FloatTest", false) -- throws a error (bool false is not a float). sets to default 0.6
+config:set("IntTest", 101) -- throws a error (101 > max value 100) sets to 100
+
+-- save the current settings. note FloatTest is not saved since its still at its default value of 0.6
+-- only custom (changed) values are saved.
+config:save("testing.ini")
+
+-- reset to defaults
+config:reset()
+
+-- load our saved values
+config:load("testing.ini")
+```
+
+Logging output of Config instances can be controlled by manually supplying a Logger instance:
+
+```lua
+local Config = require("Zmu/Config")
+local Logger = require("Zmu/Logger")
+
+local logger = Logger:new('ZMU', Logger.DEBUG)
+local config = Config:new('ZMU', logger)
+```
+
+If no Logger is specified, one is created (or reused) with the same name as the config object. For example 
+the following declaration is the same as above as the Logger named "ZMU" is reused.
+
+```lua
+local logger = Logger:new('ZMU', Logger.DEBUG)
+local config = Config:new('ZMU')
+```
 
 
 @module Config
