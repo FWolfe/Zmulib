@@ -29,7 +29,7 @@ local onServerCommand = function(module, command, args)
     local config = Config.getAllConfigs()[module]
     if not config then return end
     config.Logger:debug("Recieved config settings from server")
-    config:applyTemp(args)
+    config:applyServerSettings(args)
 end
 
 Events.OnTick.Add(Config.requestSettings)

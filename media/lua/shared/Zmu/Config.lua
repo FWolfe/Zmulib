@@ -336,8 +336,8 @@ end
 
 
 -- with mods being enabled "per save" these functions are probably redundant now
-function Config:applyTemp(settings_data)
-    self.Logger:debug("Applying temporary config settings")
+function Config:applyServerSettings(settings_data)
+    self.Logger:debug("Applying server config settings")
     if not self._PreviousSettings then
         self._PreviousSettings = {}
         for key, value in pairs(self:getSettingsTable()) do self._PreviousSettings[key] = value end
@@ -346,10 +346,11 @@ function Config:applyTemp(settings_data)
     for key, value in pairs(args) do
         self:set(key, value)
     end
+    triggerEvent("OnServerConfig", self)
 end
 
-function Config:removeTemp()
-    self.Logger:debug("Removing temporary config settings")
+function Config:removeServerSettings()
+    self.Logger:debug("Removing server config settings")
     if self._PreviousSettings then
         for key, value in pairs(self._PreviousSettings) do self:set(key, value) end
         self._PreviousSettings = nil
@@ -372,7 +373,7 @@ function Config.getAllConfigs()
     return ConfigTable
 end
 
-
+LuaEventManager.AddEvent("OnServerConfig")
 LuaEventManager.AddEvent("OnConfigChange")
 LuaEventManager.AddEvent("OnConfigLoaded")
 LuaEventManager.AddEvent("OnConfigSaved")
