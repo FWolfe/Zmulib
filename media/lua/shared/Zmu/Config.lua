@@ -119,17 +119,17 @@ end
 ]]
 function Config:add(key, data)
     -- TODO: validate data key names (error checking)
-    self.Logger:verbose("Adding config option " .. key)
+    self.Logger:verbose("Adding config option %s", key)
     if self.Options[key] then
-        self.Logger:error("Config option ".. key .. " already exists")
+        self.Logger:error("Config option %s already exists", key)
         return
     end
     if not data.type then
-        self.Logger:error("Config option ".. key .. " is missing data type")
+        self.Logger:error("Config option %s is missing data type", key)
         return
     end
     if not contains(AcceptedKeys, data.type) then
-        self.Logger:error("Config option ".. key .. " is invalid data type "..tostring(data.type))
+        self.Logger:error("Config option %s is invalid data type %s", key, tostring(data.type))
         return
     end 
     self.Options[key] = data 
@@ -192,20 +192,20 @@ This will trigger the "OnConfigChange"
 ]]
 function Config:set(key, value) 
     if not self.Options[key] then 
-        self.Logger:warn("Attempting set unknown config key " .. key .. " to " .. tostring(value))
+        self.Logger:warn("Tried to set unknown config key %s to %s", key, tostring(value))
         return nil 
     end
     local current = self.Settings[key]
-    self.Logger:verbose("Attempting set config " .. key .. " to " .. tostring(value))
+    self.Logger:verbose("Attempting set config %s to %s", key, tostring(value))
 
     value = self:validate(key, value)
     if current == value then --or EventSystem.triggerHalt("ConfigChange", key, current, value) then 
-        self.Logger:verbose("Config change key cancelled " .. key .. " to " .. tostring(value))
+        self.Logger:verbose("Config change key cancelled %s to %s", key, tostring(value))
         return false 
     end
     self.Settings[key] = value
     self.Logger.level = self.Settings.LogLevel -- keep our logger in sync
-    self.Logger:debug("Config key " .. key .. " set to " .. tostring(value))
+    self.Logger:debug("Config key %s set to %s", key, tostring(value))
     triggerEvent('OnConfigChange', self, key, value)
     return true
 end
@@ -248,26 +248,27 @@ Called automatically with `Config:set(key, value)`
 function Config:validate(key, value) 
     local options = self.Options[key]
     if not options then
-        self.Logger:error("Attempted to validate non-existant config option " .. key) 
+        self.Logger:error("Attempted to validate non-existant config option %s", key) 
         return nil 
     end
     local validType = options.type
-    self.Logger:verbose("Validating config key "..key)
+    self.Logger:verbose("Validating config key %s", key)
 
     if validType == 'integer' or validType == 'float' then validType = 'number' end
     if type(value) ~= validType then -- wrong type
-        self.Logger:error("Config " .. key .. " is invalid type (value "..tostring(value).." should be type "..options.type.."). Setting to default "..tostring(options.default))
+        self.Logger:error("Config %s is invalid type (value %s should be type %s). Setting to default %s", key, tostring(value), options.type, tostring(options.default))
         value = options.default
     end
     
     if options.type == 'integer' and value ~= math.floor(value) then
-        self.Logger:error("Config " .. key .. " is invalid type (value "..tostring(value).." should be integer not float). Setting to default "..tostring(math.floor(value)))
+        self.Logger:error("Config %s is invalid type (value %s should be integer not float). Setting to default %s", key, tostring(value), tostring(math.floor(value)))
         value = math.floor(value)
     end
     if validType == 'number' then
         if (options.min and value < options.min) or (options.max and value > options.max) then
             local clamp = math.min(math.max(value, options.min), options.max)
-            self.Logger:error("Config " .. key .. " is invalid range (value "..tostring(value).." should be between min:"..(options.min or '')..", max:" ..(options.max or '').."). Setting to "..tostring(clamp))
+            self.Logger:error("Config %s is invalid range (value %s should be between min:%s, max:%s). Setting to %s", 
+                key, tostring(value), (options.min or ''), (options.max or ''), tostring(clamp))
             value = clamp
         end
     end
@@ -276,7 +277,7 @@ end
 
 
 function Config:load(filename)
-    self.Logger:debug("Loading config file " .. filename)
+    self.Logger:debug("Loading config file %s", filename)
 
     local file = getFileReader(filename, true)
     if not file then return end
@@ -295,7 +296,7 @@ function Config:load(filename)
         for key, value in string.gmatch(line, "(%w+) *= *(.+)") do
             local option = self:option(key)
             if not option then
-                self.Logger:warn("Config: Invalid setting in "..filename.." ("..line..")")
+                self.Logger:warn("Config: Invalid setting in %s (%s)", filename, line)
                 break
             end
             if option.type == "boolean" and value == string.lower("true") then
@@ -315,10 +316,10 @@ end
 
 function Config:save(filename)
     if isClient() then return end -- dont overwrite a clients file with the servers settings
-    self.Logger:debug("Saving config file ".. filename)
+    self.Logger:debug("Saving config file %s", filename)
     local file = getFileWriter(filename, true, false)
     if not file then
-        self.Logger:error("Failed to write config file Lua/" .. filename)
+        self.Logger:error("Failed to write config file Lua/%s", filename)
         return
     end
     for key, value in pairs(self:getSettingsTable()) do
