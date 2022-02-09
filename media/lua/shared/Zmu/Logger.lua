@@ -4,7 +4,7 @@ Provides various logging functionality with various levels (error, warn, info, d
 Each Logger instance has its own level, and by default prints to the console but specific callback functions
 can be provided instead.
 
-Each line is formatted as "NAME LEVEL: TEXT"
+By default each line is formatted as "NAME LEVEL: TEXT"
 
 ```lua
 local Logger = require("Zmu/Logger")
@@ -37,6 +37,7 @@ local log = Logger:getLogger("MyLogger")
 
 local print = print
 local string = string
+local format = string.format
 local setmetatable = setmetatable
 
 local Logger = {}
@@ -72,7 +73,8 @@ function Logger:new(module_name, level, callback)
     logger = setmetatable({
         module_name = module_name,
         level = level or 2,
-        _callback = callback or print
+        _callback = callback or print,
+        format = "%s %s: %s"
         }, meta)
     LoggerTable[module_name] = logger
     return logger
@@ -81,36 +83,38 @@ end
 --[[- Basic logging function.
 
 By default prints a message to stdout if Logger.level is equal or less then the level arguement.
+Use of the wrapper methods (`logger:warn`, `Logger:debug` etc) should be preferred. 
 
 @tparam int level logging level constant
 @tparam string text text message to log.
 
-@usage Logger.log(ORGM.WARN, "this is a warning log message")
+@usage logger:log(Logger.WARN, "this is a warning log message")
 
 ]]
-function Logger:log(level, text)
+function Logger:log(level, text, ...)
     if not level or level > self.level then return end
-    self._callback(string.format("%s %s: %s", self.module_name, (LogLevelStrings[level] or ""), text))
+    if ... then text = format(text, ...) end
+    self._callback(format(self.format, self.module_name, (LogLevelStrings[level] or ""), text))
 end
 
-function Logger:verbose(text)
-    self:log(Logger.VERBOSE, text)
+function Logger:verbose(...)
+    self:log(Logger.VERBOSE, ...)
 end
 
-function Logger:debug(text)
-    self:log(Logger.DEBUG, text)
+function Logger:debug(...)
+    self:log(Logger.DEBUG, ...)
 end
 
-function Logger:info(text)
-    self:log(Logger.INFO, text)
+function Logger:info(...)
+    self:log(Logger.INFO, ...)
 end
 
-function Logger:warn(text)
-    self:log(Logger.WARN, text)
+function Logger:warn(...)
+    self:log(Logger.WARN, ...)
 end
 
-function Logger:error(text)
-    self:log(Logger.ERROR, text)
+function Logger:error(...)
+    self:log(Logger.ERROR, ...)
 end
 
 function Logger:getLogger(module_name)
