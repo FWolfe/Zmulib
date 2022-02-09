@@ -67,6 +67,7 @@ local string = string
 
 local getFileReader = getFileReader
 local getFileWriter = getFileWriter
+local isServer = isServer
 
 local Logger = require("Zmu/Logger")
 local Config = {}
@@ -355,6 +356,16 @@ function Config:removeTemp()
     end
 end
 
+function Config:sendServerSettings(player)
+    if not isServer() then return end
+    if player then
+        config.Logger:debug("Sending server config settings to client")
+        sendServerCommand(player, config.module_name, 'updateSettings', config.Settings)
+    else
+        config.Logger:debug("Sending server config settings to all clients")
+        sendServerCommand(player, config.module_name, 'updateSettings', config.Settings)
+    end
+end
 
 -- static method. not instanced
 function Config.getAllConfigs()

@@ -11,8 +11,7 @@ local onClientCommand = function(module, command, player, args)
     if command ~= "requestConfig" then return end
     local config = Config.getAllConfigs()[module]
     if not config then return end
-    config.Logger:debug("Sending config settings to player")
-    sendServerCommand(player, config.module_name, 'updateSettings', config.Settings)
+    config:sendServerSettings(player)
 end
 
 Events.OnClientCommand.Add(onClientCommand)
