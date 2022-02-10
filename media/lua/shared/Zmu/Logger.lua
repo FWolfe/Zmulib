@@ -3,6 +3,10 @@
 Provides various logging functionality with various levels (error, warn, info, debug and verbose).
 Each Logger instance has its own level, and by default prints to the console but specific callback functions
 can be provided instead.
+As well as printing to console (or custom defined function) Logger can output to a log file (located in pz's 
+cache log directory) with timestamps in zomboid's standard format. Each Logger instance can use differnt 
+log files, or share the same file (this differnt mods could be sharing one log file, each outputting different 
+levels, one debug, one errors only etc)
 
 By default each line is formatted as "NAME LEVEL: TEXT"
 
@@ -101,10 +105,11 @@ function Logger:new(module_name, level, zlogger, callback)
         _callback = callback or print,
         format = "%s %s: %s"
         }, meta)
+
     LoggerTable[module_name] = logger
     
-    -- add a log file if requested
-    if zlogger then
+    -- add a log file if requested (also check that ZLogger actually exists - for using outside pz)
+    if zlogger and ZLogger then
         if not instanceof(zlogger, "ZLogger") then
             zlogger = ZLogger.new(module_name, false)
         end 
@@ -116,7 +121,10 @@ end
 --[[- Basic logging function.
 
 By default prints a message to stdout if Logger.level is equal or less then the level arguement.
-Use of the wrapper methods (`logger:warn`, `Logger:debug` etc) should be preferred. 
+This method supports multiple argument styles for the text message. Single string arg text logs
+a basic string. Using multiple args they get passed to `string.format`
+
+Note: Use of the wrapper methods (`logger:warn`, `Logger:debug` etc) should be preferred.
 
 @tparam int level logging level constant
 @tparam string text text message to log.
