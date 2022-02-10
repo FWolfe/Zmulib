@@ -10,14 +10,14 @@ By default each line is formatted as "NAME LEVEL: TEXT"
 local Logger = require("Zmu/Logger")
 local log = Logger:new("MyLogger", Logger.INFO)
 
-log.info("this is a info message")
-log.warn("this is a warning")
-log.error("this is a error message")
-log.debug("this message wont get printed, since we specified Logger.INFO")
+log:error("this is a error message")
+log:warn("this is a warning")
+log:info("this is a info message")
+log:debug("this message wont get printed, since we specified Logger.INFO")
 
 -- change the level
 log.level = Logger.DEBUG
-log.debug("now we can print debug messages!")
+log:debug("now we can print debug messages!")
 ```
 
 to fetch a existing Logger instance from another file (without poluting globals) we can use:
@@ -27,6 +27,11 @@ local Logger = require("Zmu/Logger")
 local log = Logger:getLogger("MyLogger")
 ```
 
+Logger supports automaic formatting of output when multiple arguments are given. (see the documentation
+for lua's string.format)
+```lua
+log:info("This number is rounded to %s decimal places: %.3f", "three", 1.2345678)
+```
 
 @module Logger
 @author Fenris_Wolf
@@ -35,10 +40,12 @@ local log = Logger:getLogger("MyLogger")
 
 ]]
 
-local print = print
+local setmetatable = setmetatable
 local string = string
 local format = string.format
-local setmetatable = setmetatable
+local print = print
+
+local ZLogger = ZLogger
 
 local Logger = {}
 Logger.NONE = 0
@@ -59,8 +66,26 @@ local LogLevelStrings = {
     [5] = "VERBOSE"
 }
 
+--[[- Creates a new Logger instance
 
-function Logger:new(module_name, level, callback)
+@tparam string module_name A unique name to assign this Logger instance, which will get prefixed
+    to all output messages. If the name is already in use then the pre-existing Logger instance
+    will be returned. 
+
+@tparam int level Any messages with a equal or lower level will be output. Should be one of the constants:
+    Logger.NONE, Logger.ERROR, Logger.WARN, Logger.INFO, Logger.DEBUG, Logger.VERBOSE
+
+@tparam nil|boolean|ZLogger zlogger If true then outputs to a log file (with timestamps) in pz's cache
+    logs directory with the name format: DATE_TIME_MODULENAME.txt. If a instance of ZLogger is supplied
+    instead of a boolean value, it will use that instead of creating a new log (thus multiple Logger 
+    instances can output to a single file)
+
+@tparam nil|func callback A function to call when outputting messages. By default print() is used.
+
+@treturn Logger
+
+]]
+function Logger:new(module_name, level, zlogger, callback)
     module_name = module_name or "Logger"
     local logger = LoggerTable[module_name]
     if logger then -- logger exists, update level and callback
@@ -77,6 +102,14 @@ function Logger:new(module_name, level, callback)
         format = "%s %s: %s"
         }, meta)
     LoggerTable[module_name] = logger
+    
+    -- add a log file if requested
+    if zlogger then
+        if not instanceof(zlogger, "ZLogger") then
+            zlogger = ZLogger.new(module_name, false)
+        end 
+        logger.ZLogger = zlogger
+    end
     return logger
 end
 
@@ -94,7 +127,9 @@ Use of the wrapper methods (`logger:warn`, `Logger:debug` etc) should be preferr
 function Logger:log(level, text, ...)
     if not level or level > self.level then return end
     if ... then text = format(text, ...) end
-    self._callback(format(self.format, self.module_name, (LogLevelStrings[level] or ""), text))
+    text = format(self.format, self.module_name, (LogLevelStrings[level] or ""), text)
+    if self._callback then self._callback(text) end
+    if self.ZLogger then self.ZLogger:write(text) end
 end
 
 function Logger:verbose(...)
