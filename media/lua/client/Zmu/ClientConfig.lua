@@ -26,7 +26,7 @@ end
 local onServerCommand = function(module, command, args)
     if not isClient() then return end
     if command ~= "updateConfig" then return end
-    local config = Config.getAllConfigs()[module]
+    local config = Config.getConfig(module)
     if not config then return end
     config.Logger:debug("Recieved config settings from server")
     config:applyServerSettings(args)
