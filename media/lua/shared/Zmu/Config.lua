@@ -69,6 +69,7 @@ local getFileReader = getFileReader
 local getFileWriter = getFileWriter
 local isServer = isServer
 
+local TableUtils = require("Zmu/TableUtils")
 local Logger = require("Zmu/Logger")
 local Config = {}
 local meta = { __index = Config }
@@ -106,12 +107,6 @@ function Config:new(module_name, logger)
     return config
 end
 
-local contains(tbl, value)
-    for _, v in pairs(tbl) do
-        if v == value then return true end
-    end
-    return false
-end
 --[[- adds a new configuration setting with defaults and value limits.
 
 @tparam string key
@@ -129,7 +124,7 @@ function Config:add(key, data)
         self.Logger:error("Config option %s is missing data type", key)
         return
     end
-    if not contains(AcceptedKeys, data.type) then
+    if not TableUtils.contains(AcceptedKeys, data.type) then
         self.Logger:error("Config option %s is invalid data type %s", key, tostring(data.type))
         return
     end 
@@ -267,7 +262,7 @@ function Config:validate(key, value)
     end
     if validType == 'number' then
         if (options.min and value < options.min) or (options.max and value > options.max) then
-            local clamp = math.min(math.max(value, options.min), options.max)
+            local clamp = math.min(math.max(value, options.min), options.max) -- could use MathUtils.clamp but probably redundant
             self.Logger:error("Config %s is invalid range (value %s should be between min:%s, max:%s). Setting to %s", 
                 key, tostring(value), (options.min or ''), (options.max or ''), tostring(clamp))
             value = clamp
@@ -366,6 +361,10 @@ function Config:sendServerSettings(player)
         config.Logger:debug("Sending server config settings to all clients")
         sendServerCommand(player, config.module_name, 'updateSettings', config.Settings)
     end
+end
+
+function Config.getConfig(module_name)
+    return ConfigTable[module_name]
 end
 
 -- static method. not instanced
