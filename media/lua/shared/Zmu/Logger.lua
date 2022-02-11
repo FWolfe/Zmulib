@@ -37,6 +37,33 @@ for lua's string.format)
 log:info("This number is rounded to %s decimal places: %.3f", "three", 1.2345678)
 ```
 
+A full example of multiple instances on a shared output file and custom callback:
+```lua
+local Logger = require('Zmu/Logger')
+
+-- create a ZLogger instance to log to a shared log file.
+local zlogger = ZLogger.new("MyLog", false)
+
+-- now create 3 different Logger instances with different output levels and link
+-- them all to the same log file 
+local log1 = Logger:new("Mod1", Logger.INFO, zlogger)
+local log2 = Logger:new("Mod2", Logger.ERROR, zlogger)
+local log3 = Logger:new("Mod3", Logger.DEBUG, zlogger, fuction(text)
+    -- have the player say the message for log3, instead of printing to console
+    -- note this still goes to our custom log file.
+    local player = getPlayer()
+    if player then player:Say(text) end
+end)
+
+-- log some various messages
+log1:info("log1 shows info messages, warnings and errors")
+log1:warn("this is a warning message")
+log2:warn("log2 doesnt print warnings") -- wont print or log to file
+log2:error("log2 only prints error messages")
+log3:debug("can even format %s like %s", "messages", "this")
+log3:info("it uses string.format syntax like %.2f and %04d", 123.4567, 55)
+```
+
 @module Logger
 @author Fenris_Wolf
 @release 1.00
@@ -130,6 +157,8 @@ Note: Use of the wrapper methods (`logger:warn`, `Logger:debug` etc) should be p
 @tparam string text text message to log.
 
 @usage logger:log(Logger.WARN, "this is a warning log message")
+
+@usage logger:log(Logger.WARN, "this is a %s %s", "formatted", "message")
 
 ]]
 function Logger:log(level, text, ...)
