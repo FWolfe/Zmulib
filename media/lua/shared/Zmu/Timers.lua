@@ -6,20 +6,18 @@ with a specified number of repeats (or indefinitly)
 ```lua
 local Timers = require("Zmu/Timers")
 
+-- callback function for when the timer executes
 local myCallback = function(self, player, text)
     player:Say(text .. tostring(self.repeats))
 end
 
 -- add a new timer on entering the game, triggered every 2 minutes, 10 times
 Events.OnGameStart.Add(function()
-    local timer = Timers.add("myTimer", 2, 10, myCallback, getPlayer(), "this is my timer. repeats left: ")
-end)
-```
+    Timers.add("myTimer", 2, 10, myCallback, getPlayer(), "this is my timer. repeats left: ")
 
-```lua
-local Timers = require("Zmu/Timers")
--- add a new timer on entering the game, triggered every minute forever until the player goes outside
-Events.OnGameStart.Add(function()
+    -- another format:
+    -- add a new timer on entering the game, triggered every minute forever until the 
+    -- player goes outside
     local timer = Timers.add("myTimer", 1, true, nil, getPlayer())
     
     function timer:callback(player)
@@ -33,6 +31,7 @@ Events.OnGameStart.Add(function()
     end
 end)
 ```
+
 
 @module Timers
 @author Fenris_Wolf
