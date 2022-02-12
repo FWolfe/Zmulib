@@ -29,10 +29,10 @@ Events.OnGameStart.Add(function()
     function timer:callback(player)
         local square = player:getCurrentSquare()
         if square and square:isOutside() then
-            player:Say("outside!")
-            Timers.remove(self)
+            player:Say("Sure is a nice day outside!")
+            self:delete()
         else
-            player:Say("indoors!")
+            player:Say("This house is boring.")
         end
     end
 end)
