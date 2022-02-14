@@ -80,7 +80,7 @@ local AcceptedTypes = {
 }
 
 function Config:new(module_name, logger)
-    local module_name = module_name or "Config"
+    module_name = module_name or "Config"
     local name = module_name -- for unique generation
     logger = logger or Logger:new(module_name) -- use supplied name to fetch logger
 
