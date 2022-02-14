@@ -1,5 +1,5 @@
 local ipairs = ipairs
-local manager = getScriptManager() -- i prefer this get method to ScriptManager.instance
+local getScriptManager = getScriptManager
 
 --[[
 adjust_items("Base", {
@@ -14,6 +14,7 @@ adjust_items("Base", {
 ]]
 
 local adjust_items = function(module, items)
+    local manager = getScriptManager()
     for name, tweaks in ipairs(items) do repeat
         local item = manager:getItem(module .. '.'.. name)
         if not item then break end
