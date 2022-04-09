@@ -355,14 +355,15 @@ end
 function Config:sendServerSettings(player)
     if not isServer() then return end
     if player then
-        config.Logger:debug("Sending server config settings to client")
-        sendServerCommand(player, config.module_name, 'updateSettings', config.Settings)
+        self.Logger:debug("Sending server config settings to client (%s)", self.module_name)
+        sendServerCommand(player, self.module_name, 'updateSettings', self.Settings)
     else
-        config.Logger:debug("Sending server config settings to all clients")
-        sendServerCommand(player, config.module_name, 'updateSettings', config.Settings)
+        self.Logger:debug("Sending server config settings to all clients (%s)", self.module_name)
+        sendServerCommand(player, self.module_name, 'updateSettings', self.Settings)
     end
 end
 
+-- static method. not instanced
 function Config.getConfig(module_name)
     return ConfigTable[module_name]
 end
